@@ -12,8 +12,8 @@ This application will keep evolving as features are added. This documentation wi
 
 The application is built using microservices architecture i.e. the application consists of multiple decoupled services.
 Currently, as per the architecture diagram there are two services:
-    - Registration Service
-    - Campaign Service
+- Registration Service
+- Campaign Service
 
 ### Registration Service
 GitHub Repo - [Registration Service Repo](https://github.com/sharayu-potuwar/e-commerce_business-registration-service)
@@ -21,8 +21,8 @@ GitHub Repo - [Registration Service Repo](https://github.com/sharayu-potuwar/e-c
 This service is responsible for managing the customer registration. The service is built in Python using FastAPI framework and is deployed to the Amazon ECS Fargate.
 It utilizes an application loadbalancer as its endpoint using which user can access the application. Please note that currently there is no frontend that is built for the app and the way to interact with the app is by using the Swagger endpoint.
 The registration service has 2 endpoints - 
-    - customer-registration - Users will input their personal details with the email address and upon submission the user will be registered by creating an entry in the postgreSQL RDS database. This also publishes a message to SNS topic which subsequently triggers the campaign service which we will discuss about further in the document.
-    - verify-registration -  This endpoint can be used to verify if the user is already registered or not.
+- customer-registration - Users will input their personal details with the email address and upon submission the user will be registered by creating an entry in the postgreSQL RDS database. This also publishes a message to SNS topic which subsequently triggers the campaign service which we will discuss about further in the document.
+- verify-registration -  This endpoint can be used to verify if the user is already registered or not.
 
 ### Campaign Service
 GitHub Repo - [Campaign Service Repo](https://github.com/sharayu-potuwar/e-commerce_business-campaign-service)
@@ -34,16 +34,22 @@ This service is built in an event-driven manner using integration of SNS and AWS
 GitHub Repo - [Terraform Repo](https://github.com/sharayu-potuwar/e-commerce_business-infra)
 
 The infrastruture is managed Via Terraform. This helps in tearing down the entire environment and services when its not being used and in turn save cost.
+The Infrastructure code also manages multiple environments (In the same AWS account because its personal account). The Terraform State is managed in Terraform Cloud.
 
 
 ### Deployments
-The
 
+#### Infrastructure Deployment
+Infrastructure deployment is completely managed by Terraform Cloud. There are two workspaces that are configured. One, for Dev and another for Prod. Both the workspaces are setup to trigger the automated plans as soon as there is a Push or a PR is merged to the main branch.
 
-Following features have been implemented considering the best practises of a [12 factor app](https://12factor.net/)
+#### Application Services Deployment
+CICD for the Services is managed using AWS CodePIpeline and CodeBuild.
+These configurations are built in in the application code repositories using buildspec and then the pipelines are configured. Please note that the CodeBuild and CodePipeline resources are not provisioned using Terraform yet and thats the next improvement step in the setup.
+
+The following features have been implemented considering the best practises of a [12 factor app](https://12factor.net/)
 - Each Service is maintained in its own github repository
 - Each Service has its own CICD pipeline
-- Dependencies are speecified explocitly using requirements.txt file
+- Dependencies are speecified explicitly using requirements.txt file
 - Cloud Native Services are being used
 - Services are decoupled from each other, interaction between the existing services is happening through SNS (a publisher subscriber model)
 - Concurrency is ensured using services like ECS Fargate and AWS Lambda
